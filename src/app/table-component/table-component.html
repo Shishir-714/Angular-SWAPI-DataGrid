@@ -1,0 +1,88 @@
+<section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
+  <div
+    class="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
+  >
+    <div>
+      <h2 class="text-lg font-semibold text-slate-900">Starship directory</h2>
+      <p class="mt-1 text-sm text-slate-500">Search and resize columns to explore the results.</p>
+    </div>
+
+    <!-- todo: define icon and use -->
+    <label class="relative block w-full sm:w-80">
+      <svg
+        class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
+        viewBox="0 0 20 20"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+        aria-hidden="true"
+      >
+        <circle cx="8.5" cy="8.5" r="4.75"></circle>
+        <path d="m12 12 4 4"></path>
+      </svg>
+      <input
+        type="search"
+        placeholder="Search by name"
+        (input)="updateFilterInput($any($event.target).value)"
+        class="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+      />
+    </label>
+  </div>
+
+  <div
+    #tableContainer
+    class="virtual-table-scroll relative max-h-[70vh] h-[65vh] overflow-auto scrollbar-none"
+    (scroll)="onScroll($event)"
+  >
+    <table
+      [style.width.px]="table.getTotalSize()"
+      class="table-fixed border-collapse text-left text-sm text-slate-700"
+      aria-label="Star Wars Starship"
+    >
+      <thead class="bg-slate-900 text-xs uppercase tracking-wider text-slate-200 sticky">
+        @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
+          <tr>
+            @for (header of headerGroup.headers; track header.id) {
+              <th
+                class="relative select-none border-b border-slate-700 px-5 py-4 font-semibold first:pl-6 last:pr-6"
+                [style.width.px]="header.getSize()"
+              >
+                {{ header.column.columnDef.header }}
+
+                @if (header.column.getCanResize()) {
+                  <div
+                    (mousedown)="header.getResizeHandler()($event)"
+                    (touchstart)="header.getResizeHandler()($event)"
+                    class="group absolute inset-y-0 -right-1 z-10 w-3 cursor-col-resize touch-none bg-transparent transition-colors after:absolute after:inset-y-3 after:left-1/2 after:w-0.5 after:-translate-x-1/2 after:rounded-full after:bg-slate-500 after:opacity-0 after:transition-opacity hover:after:bg-sky-300 hover:after:opacity-100"
+                    [class.bg-sky-400]="header.column.getIsResizing()"
+                  ></div>
+                }
+              </th>
+            }
+          </tr>
+        }
+      </thead>
+
+      <tbody class="virtual-table-body relative block w-100" [style.height.px]="totalTableBodySize()">
+        @for (virtualRow of virtualRows(); track virtualRow.key) {
+          @let row = allRows()[virtualRow.index];
+          @if (row) {
+            <tr
+              class="virtual-table-row top-0 table w-full table-fixed absolute border-b border-slate-100 bg-white transition-colors even:bg-slate-50/70 hover:bg-sky-50"
+              [style.transform]="'translateY(' + virtualRow.start + 'px)'"
+            >
+              @for (cell of row.getAllCells(); track cell.id) {
+                <td
+                  class="overflow-hidden text-ellipsis whitespace-nowrap px-5 py-4 font-medium first:pl-6 last:pr-6"
+                  [style.width.px]="cell.column.getSize()"
+                >
+                  {{ cell.getValue() }}
+                </td>
+              }
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
