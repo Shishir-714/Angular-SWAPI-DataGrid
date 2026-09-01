@@ -1,71 +1,58 @@
-<section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl shadow-slate-200/60">
-  <div
-    class="flex flex-col gap-4 border-b border-slate-200 bg-slate-50 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"
-  >
-    <div>
-      <h2 class="text-lg font-semibold text-slate-900">Starship directory</h2>
-      <p class="mt-1 text-sm text-slate-500">Search and resize columns to explore the results.</p>
-    </div>
+<section class="data-grid">
+  <div class="data-grid__toolbar">
+    <div class="data-grid__heading">
+        <h2 class="data-grid__title">Starship directory</h2>
 
-    <!-- todo: define icon and use -->
-    <label class="relative block w-full sm:w-80">
-      <svg
-        class="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400"
-        viewBox="0 0 20 20"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
-        aria-hidden="true"
-      >
-        <circle cx="8.5" cy="8.5" r="4.75"></circle>
-        <path d="m12 12 4 4"></path>
-      </svg>
+        <span class="data-grid__count">
+          {{ allRows().length }} records
+        </span>
+      </div>
+
+    <label class="search-input">
+      <span class="search-input__icon">
+        <app-icon name="search" [size]="18" />
+      </span>
+
       <input
         type="search"
-        placeholder="Search by name"
+        placeholder="Search starships..."
         (input)="updateFilterInput($any($event.target).value)"
-        class="w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-sky-500 focus:ring-4 focus:ring-sky-100"
+        class="search-input__field"
       />
     </label>
   </div>
 
   <div
     #tableContainer
-    class="virtual-table-scroll relative max-h-[70vh] h-[65vh] overflow-auto scrollbar-none"
+    class="virtual-table-scroll"
     (scroll)="onScroll($event)"
   >
-  @if (dirtyRowsCount() > 0) {
-  <div class="flex items-center justify-between border-t border-slate-200 bg-amber-50 px-5 py-3">
-    <p class="text-sm text-amber-800">{{ dirtyRowsCount() }} unsaved change(s)</p>
-    <button
-      type="button"
-      class="rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-    >
-      Save changes
-    </button>
-  </div>
-}
     <table
       [style.width.px]="table.getTotalSize()"
-      class="table-fixed border-collapse text-left text-sm text-slate-700"
-      aria-label="Star Wars Starship"
+      class="data-table"
+      aria-label="Star Wars Starships"
     >
-      <thead class="bg-slate-900 text-xs uppercase tracking-wider text-slate-200 sticky">
+      <thead class="data-table__head">
         @for (headerGroup of table.getHeaderGroups(); track headerGroup.id) {
           <tr>
             @for (header of headerGroup.headers; track header.id) {
               <th
-                class="relative select-none border-b border-slate-700 px-5 py-4 font-semibold first:pl-6 last:pr-6"
+                class="data-table__header"
                 [style.width.px]="header.getSize()"
               >
-                {{ header.column.columnDef.header }}
+                <span class="flex justify-between">
+                  {{ header.column.columnDef.header }}
+                  @if(isEditableColumn(header.column.columnDef)) {
+                    <app-icon name="edit" [size]="16" />
+                  }
+                </span>
 
                 @if (header.column.getCanResize()) {
                   <div
                     (mousedown)="header.getResizeHandler()($event)"
                     (touchstart)="header.getResizeHandler()($event)"
-                    class="group absolute inset-y-0 -right-1 z-10 w-3 cursor-col-resize touch-none bg-transparent transition-colors after:absolute after:inset-y-3 after:left-1/2 after:w-0.5 after:-translate-x-1/2 after:rounded-full after:bg-slate-500 after:opacity-0 after:transition-opacity hover:after:bg-sky-300 hover:after:opacity-100"
-                    [class.bg-sky-400]="header.column.getIsResizing()"
+                    class="column-resizer"
+                    [class.column-resizer--active]="header.column.getIsResizing()"
                   ></div>
                 }
               </th>
@@ -74,33 +61,40 @@
         }
       </thead>
 
-      <tbody class="virtual-table-body relative block w-100" [style.height.px]="totalTableBodySize()">
+      <tbody
+        class="virtual-table-body"
+        [style.height.px]="totalTableBodySize()"
+      >
         @if (allRows().length === 0) {
           <tr>
-            <td colspan="5" class="px-5 py-6 text-center text-slate-500">
-              No Match Found!!
+            <td colspan="5" class="data-table__empty">
+                <div class="empty-state__icon">
+                  <app-icon name="search" [size]="22" />
+                </div>
+                <p class="empty-state__title">No starships found</p>
+
             </td>
           </tr>
-        }
-        @else {
+        } @else {
           @for (virtualRow of virtualRows(); track virtualRow.key) {
             @let row = allRows()[virtualRow.index];
+
             @if (row) {
               <tr
-                class="virtual-table-row top-0 table w-full table-fixed absolute border-b border-slate-100 bg-white transition-colors even:bg-slate-50/70 hover:bg-sky-50"
+                class="virtual-table-row data-table__row"
                 [style.transform]="'translateY(' + virtualRow.start + 'px)'"
               >
                 @for (cell of row.getAllCells(); track cell.id) {
                   <td
-                    class="overflow-hidden text-ellipsis whitespace-nowrap px-5 py-4 font-medium first:pl-6 last:pr-6"
+                    class="data-table__cell"
                     [style.width.px]="cell.column.getSize()"
-                    [class.bg-amber-50]="isDirty(row.id)"
+                    [class.data-table__cell--dirty]="isDirty(row.id)"
                   >
                     @if (isEditableColumn(cell.column.columnDef)) {
                       @if (isEditingCell(row.id, cell.column.id)) {
                         <input
                           appAutofocus
-                          class="w-full bg-transparent outline-none rounded px-1 ring-2 ring-sky-300"
+                          class="cell-input"
                           [value]="draftValue()"
                           (input)="draftValue.set($any($event.target).value)"
                           (blur)="commitEdit(row.id, cell.column.id)"
@@ -109,14 +103,34 @@
                         />
                       } @else {
                         <span
-                          class="block w-full cursor-text rounded px-1 hover:bg-slate-100"
-                          (dblclick)="startEdit(row.id, cell.column.id, cell.getValue())"
+                          class="editable-cell"
+                          (click)="
+                            startEdit(
+                              row.id,
+                              cell.column.id,
+                              cell.getValue()
+                            )
+                          "
                         >
-                          {{ cell.getValue() }}
+                          <span class="editable-cell__value">
+                            {{ cell.getValue() }}
+                          </span>
+                          <span class="editable-cell__hint">
+                            Click to edit
+                          </span>
                         </span>
                       }
                     } @else {
-                      {{ cell.getValue() }}
+                      <span class="data-table__value">
+                      @if (cell.column.columnDef.id === 'hyperdrive_rating') {
+                        <span class="inline-flex items-center gap-2">
+                          <app-icon name="star" [size]="14" />
+                          <span>{{ cell.getValue() }}</span>
+                        </span>
+                      } @else {
+                        {{ cell.getValue() }}
+                      }
+                    </span>
                     }
                   </td>
                 }
@@ -127,4 +141,29 @@
       </tbody>
     </table>
   </div>
+
+  @if (dirtyRowsCount() > 0) {
+    <div class="save-bar">
+      <div class="save-bar__info">
+        <div class="save-bar__indicator"></div>
+
+        <div>
+          <p class="save-bar__title">
+            {{ dirtyRowsCount() }} unsaved change(s)
+          </p>
+
+          <p class="save-bar__description">
+            Your edits are currently stored locally.
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="save-bar__button"
+      >
+        Save changes
+      </button>
+    </div>
+  }
 </section>

@@ -14,7 +14,7 @@ Requires Node 20.19+ and npm. No environment variables or backend setup needed �
 
 ## SWAPI Resource
 
-**`starships`** — chosen over `people` since it has more numeric/technical fields (hyperdrive rating, crew, passengers, manufacturer, starship class), which made for a richer, more realistic-looking grid.
+**`starships`** 
 
 ## Infinite Scroll & the "No Loader While Scrolling" Behavior
 
@@ -31,7 +31,7 @@ Pagination is handled with **TanStack Query's `injectInfiniteQuery`**:
 
 The **Name** column is editable (marked via `meta: { editable: true }` on its column definition). Editing is click-to-edit:
 
-- Double-clicking a cell in an editable column swaps its read-only `<span>` for a text `<input>`, pre-filled and focused.
+- Clicking a cell in an editable column swaps its read-only `<span>` for a text `<input>`, pre-filled and focused.
 - **Enter** or **blur** commits the value; **Escape** cancels and discards the in-progress edit without touching stored state.
 - Committed edits are kept in a `Record<string, Partial<Starship>>` client-state signal (`edits`), keyed by an id derived from each starship's SWAPI `url` field. **No HTTP request is made** — SWAPI is read-only and edits never leave the browser.
 - The grid's displayed data (`displayUpdatedData`) is a merge of the original SWAPI row and any matching entry in `edits`, computed at render time — the original fetched/cached data is never mutated, only overlaid.

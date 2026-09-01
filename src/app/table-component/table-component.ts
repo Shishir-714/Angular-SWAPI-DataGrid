@@ -22,6 +22,7 @@ import {
 } from '@tanstack/angular-table';
 import { injectVirtualizer } from '@tanstack/angular-virtual';
 import { StringService } from "../services/stringService";
+import { IconComponent } from "../icons/icons.component";
 
 const features = tableFeatures({
   columnSizingFeature,
@@ -36,6 +37,8 @@ const features = tableFeatures({
 @Component({
     selector: 'app-starship-table',
     templateUrl: './table-component.html',
+    imports: [IconComponent],
+    styleUrl: './table-component.css',
 })
 export class TableComponent {
     readonly stringService = inject(StringService);
@@ -66,6 +69,7 @@ export class TableComponent {
     {
         header: 'Hyperdrive Rating',
         accessorKey: 'hyperdrive_rating',
+        id: 'hyperdrive_rating',
     },
     {
         header: 'Manufacturer',
@@ -132,7 +136,6 @@ export class TableComponent {
 
   //keeping track of edited cells for patch request.
   edits = signal<Record<string, Partial<Starship>>>({});
-  readonly save = output<Record<string, Partial<Starship>>>();
   readonly dirtyRowsCount = computed(() => Object.keys(this.edits()).length);
   editingCell = signal<{ rowId: string; columnId: string } | null>(null);
   draftValue = signal<string>('');
@@ -146,7 +149,7 @@ export class TableComponent {
       const id = this.stringService.generateIdFromUrl(ship.url);
       return { ...ship, ...this.edits()[id] };
     }),
-);
+  );
 
   updateCell = (rowId: string, field: keyof Starship, value: unknown) => {
     this.edits.update((current) => ({

@@ -26,4 +26,21 @@ export class QueryService {
             throw new Error('Unable to fetch starship resource from SWAPI.');
         }
     }
+
+    // async patchResource<T>(endpoint: string, id: string, changes: Partial<T>): Promise<T> {
+    //     const url = new URL(`${this.baseURL}/${endpoint}/${id}/`);
+    //     url.searchParams.set('format', 'json');
+
+    //     const response = await fetch(url, {
+    //         method: 'PATCH',
+    //         headers: { 'Content-Type': 'application/json' },
+    //         body: JSON.stringify(changes),
+    //     });
+
+    //     if (!response.ok) {
+    //         throw new Error(`Error updating resource! Status: ${response.status}`);
+    //     }
+
+    //     return response.json();
+    // }
 }

@@ -4,7 +4,6 @@ import { injectInfiniteQuery } from '@tanstack/angular-query-experimental';
 import { Starship } from "../types/index.types";
 import { LoaderComponent } from "../loader/loader";
 import { TableComponent } from "../table-component/table-component";
-import { StringService } from "../services/stringService";
 
 @Component({
     selector: 'app-show-starship-response',
