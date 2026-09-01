@@ -4,7 +4,7 @@
       <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
         Star Wars Starships
       </h1>
-      <p class="mt-2 text-slate-600">Browse the characters returned by the Star Wars API.</p>
+      <p class="mt-2 text-slate-600">Browse the starships returned by the Star Wars API.</p>
     </div>
 
     @if (starshipQuery.isLoading()) {
@@ -23,7 +23,10 @@
       </div>
     }
     @else {
-      <app-starship-table [starshipData]="Starship()" (loadNextPage)="loadNextPage()" />
+      <app-starship-table 
+      [starshipData]="Starship()" 
+      (loadNextPage)="loadNextPage()"
+       />
 
       <div class="mt-5 flex flex-col items-center gap-3 text-center">
         @if (starshipQuery.isFetchNextPageError()) {

@@ -10,7 +10,7 @@ export type Starship = {
     model: string;
     manufacturer: string;
     crew: string;
-    passengers: string;
+    passengers: number;
     hyperdrive_rating: number;
     starship_class: string;
     url: string;

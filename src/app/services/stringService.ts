@@ -8,8 +8,8 @@ export class StringService {
         return input ? `${input[0].toUpperCase()}${input.slice(1)}` : '-';
     }
 
-    generateIdFromUrl = (url: string) => {
-        //todo
-        return ;
+    //returns last segment (uniquer number) from the url.
+    generateIdFromUrl = (url: string): string => {
+        return url.replace(/\/$/, '').split('/').pop()!;
     }
 }

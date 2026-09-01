@@ -19,7 +19,6 @@ import {
   ColumnFiltersState,
   columnSizingFeature,
   columnResizingFeature,
-  ColumnSizingState,
 } from '@tanstack/angular-table';
 import { injectVirtualizer } from '@tanstack/angular-virtual';
 import { StringService } from "../services/stringService";
@@ -51,12 +50,14 @@ export class TableComponent {
     columnFilters = signal<ColumnFiltersState>([
         {id: 'name', value: ''}
     ]);
-    columnSizing = signal<ColumnSizingState>({});
 
     private readonly columns: Array<ColumnDef<typeof features, Starship>> = [
     {
         header: 'Name',
         accessorKey: 'name',
+        meta: {
+          editable: true,
+        },
     },
     {
         header: 'Model',
@@ -75,6 +76,14 @@ export class TableComponent {
         accessorFn: (row: Starship) => 
             this.stringService.capitalizeFirstChar(row.starship_class),
     },
+    {
+        header: 'Passengers',
+        accessorKey: 'passengers',
+    },
+    {
+        header: 'Crew',
+        accessorKey: 'crew',
+    },
   ];
 
   updateFilterInput = (updatedValue: string) => {
@@ -85,8 +94,9 @@ export class TableComponent {
 
   table = injectTable(() => ({
     features,
+    getRowId: (row) => this.stringService.generateIdFromUrl(row.url),
     columns: this.columns,
-    data: this.starshipData(),
+    data: this.displayUpdatedData(),
     state: {
       columnFilters: this.columnFilters(),
     },
@@ -113,14 +123,58 @@ export class TableComponent {
 
   onScroll(event: Event): void {
     const tableContainerElement = event.target as HTMLDivElement;
-    const nearEnd = tableContainerElement.scrollTop + tableContainerElement.clientHeight >= tableContainerElement.scrollHeight - 120;
+    const nearEnd = tableContainerElement.scrollTop + tableContainerElement.clientHeight >= tableContainerElement.scrollHeight - 150;
 
     if (nearEnd) {
       this.loadNextPage.emit();
     }
   }
 
-  consoleData = () => {
-    console.log(this.starshipData());
+  //keeping track of edited cells for patch request.
+  edits = signal<Record<string, Partial<Starship>>>({});
+  readonly save = output<Record<string, Partial<Starship>>>();
+  readonly dirtyRowsCount = computed(() => Object.keys(this.edits()).length);
+  editingCell = signal<{ rowId: string; columnId: string } | null>(null);
+  draftValue = signal<string>('');
+
+  isEditableColumn(columnDef: ColumnDef<typeof features, Starship>): boolean {
+    return !!(columnDef.meta as { editable?: boolean } | undefined)?.editable;
+  }
+
+  readonly displayUpdatedData = computed(() =>
+    this.starshipData().map((ship) => {
+      const id = this.stringService.generateIdFromUrl(ship.url);
+      return { ...ship, ...this.edits()[id] };
+    }),
+);
+
+  updateCell = (rowId: string, field: keyof Starship, value: unknown) => {
+    this.edits.update((current) => ({
+      ...current,
+      [rowId]: {...current[rowId], [field]: value},
+    }));
+  }
+
+  isDirty = (rowId: string) => {
+    return !!Object.keys(this.edits()[rowId] ?? {}).length;
+  }
+
+  isEditingCell(rowId: string, columnId: string): boolean {
+    const editing = this.editingCell();
+    return !!editing && editing.rowId === rowId && editing.columnId === columnId;
+  }
+
+  startEdit(rowId: string, columnId: string, currentValue: unknown): void {
+    this.editingCell.set({ rowId, columnId });
+    this.draftValue.set(String(currentValue ?? ''));
+  }
+
+  commitEdit(rowId: string, columnId: string): void {
+    this.updateCell(rowId, columnId as keyof Starship, this.draftValue());
+    this.editingCell.set(null);
+  }
+
+  cancelEdit(): void {
+    this.editingCell.set(null);
   }
 }
